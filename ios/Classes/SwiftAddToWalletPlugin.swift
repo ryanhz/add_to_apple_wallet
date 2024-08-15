@@ -81,7 +81,7 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView {
                 print("No valid Pass data passed")
                 return
             }
-            guard let addPassViewController = PKAddPassesViewController(pass: newPass) else {
+            guard let controller = PKAddPassesViewController(pass: newPass) else {
                 print("View controller messed up")
                 return
             }
@@ -89,27 +89,25 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView {
                 print("Root VC unavailable")
                 return
             }
-            rootVC.present(addPassViewController, animated: true)
+            rootVC.present(controller, animated: true)
             _invokeAddButtonPressed()
         }
         else if(_issuerData != nil && _signature != nil) {
             if #available(iOS 16.4, *) {
-                let issuerData: Data = Data(base64Encoded: _issuerData!)!
-                let signature: Data = Data(base64Encoded: _signature!)!
-                var addPassViewController: PKAddPassesViewController
-                do {
-                    addPassViewController = try PKAddPassesViewController(issuerData: issuerData, signature: signature)
+                let issuerData: Data = _issuerData!.data(using: .utf8)!
+                let signature: Data = _signature!.data(using: .utf8)!
+                if let controllerWithIssuerData = ExceptionHandler.safeAddPassesViewController(withIssuerData: issuerData, signature: signature) {
+                    guard let rootVC = UIApplication.shared.keyWindow?.rootViewController else {
+                        print("Root VC unavailable")
+                        return
+                    }
+                    rootVC.present(controllerWithIssuerData, animated: true)
+                    _invokeAddButtonPressed()
                 }
-                catch {
+                else {
                     print("No valid issuer data and signature passed")
                     return
                 }
-                guard let rootVC = UIApplication.shared.keyWindow?.rootViewController else {
-                    print("Root VC unavailable")
-                    return
-                }
-                rootVC.present(addPassViewController, animated: true)
-                _invokeAddButtonPressed()
             } else {
                 print("icloud binding only available from iOS 16.4")
                 return
