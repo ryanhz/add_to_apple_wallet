@@ -25,6 +25,9 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
+    if (project.android.hasProperty("namespace")) {
+        namespace 'com.barkibu.add_to_wallet'
+    }
     compileSdkVersion 30
 
     sourceSets {
@@ -33,7 +36,6 @@ android {
     defaultConfig {
         minSdkVersion 16
     }
-    namespace 'com.barkibu.add_to_wallet'
 }
 
 dependencies {
